@@ -7,12 +7,12 @@ import (
 )
 
 func Run(master string,alertmanagerurl string) {
-	
-	eventHandler := new(handlers.AlertManager)
+	var eventHandler handlers.AlertManager
+	//eventHandler := new(handlers.AlertManager)
 	if err := eventHandler.Init(alertmanagerurl); err != nil {
 		glog.Fatal(err)
 	}
 	
-	controller.Start(master, *eventHandler)
+	controller.Start(master, eventHandler)
 }
 
