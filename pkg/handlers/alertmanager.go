@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 	
-	"k8swatch/pkg/event"
-	kbEvent "k8swatch/pkg/event"
+	"github.com/wyatt88/k8swatch/pkg/event"
+	kbEvent "github.com/wyatt88/k8swatch/pkg/event"
 	
 	"github.com/golang/glog"
 )

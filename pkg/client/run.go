@@ -1,8 +1,8 @@
 package client
 
 import (
-	"k8swatch/pkg/handlers"
-	"k8swatch/pkg/controller"
+	"github.com/wyatt88/k8swatch/pkg/handlers"
+	"github.com/wyatt88/k8swatch/pkg/controller"
 	"github.com/golang/glog"
 )
 
@@ -13,6 +13,6 @@ func Run(master string,alertmanagerurl string) {
 		glog.Fatal(err)
 	}
 	
-	controller.Start(master, *eventHandler)
+	controller.Start(master, eventHandler)
 }
 

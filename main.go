@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	c "k8swatch/pkg/client"
+	c "github.com/wyatt88/k8swatch/pkg/client"
 )
 
 func main()  {

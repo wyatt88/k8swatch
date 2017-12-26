@@ -2,8 +2,6 @@ package event
 
 import (
 	"k8s.io/api/core/v1"
-	//"k8s.io/api/apps/v1beta2"
-	//batch "k8s.io/api/batch/v1"
 )
 
 type Event struct {
