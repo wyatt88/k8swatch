@@ -1,0 +1,15 @@
+FROM golang:alpine
+MAINTAINER "Double Wen <wyatthaha@126.com>"
+
+RUN apk update && \
+    apk add git build-base && \
+    rm -rf /var/cache/apk/* && \
+    mkdir -p "$GOPATH/src/github.com/wyatt88/k8swatch"
+
+ADD . "$GOPATH/src/github.com/wyatt88/k8swatch"
+
+RUN cd "$GOPATH/src/github.com/wyatt88/k8swatch" && \
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a --installsuffix cgo --ldflags="-s" -o /k8swatch
+
+COPY Dockerfile.run /
+CMD tar -cf - -C / Dockerfile.run k8swatch
