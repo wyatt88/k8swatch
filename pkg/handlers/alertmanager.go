@@ -13,12 +13,18 @@ import (
 	"github.com/golang/glog"
 )
 
+const (
+	alertPushEndpoint = "/api/v1/alerts"
+	contentTypeJSON   = "application/json"
+)
+
 var alertLevel = map[string]string{
 	"Scheduled": "warning",
 	"Killing":   "firing",
 	"Started":   "good",
 }
 
+// Alert is ok
 type Alert struct {
 	Labels       map[string]string `json:"labels"`
 	Annotations  map[string]string `json:"annotations"`
@@ -41,13 +47,16 @@ var alertManagerErrMsg = `
  using "--alertmanager http://yourserverip:9093":
  `
 
-// New returns a alert manager handler interface
-func (a *AlertManager) Init(alertmanagerurl string) error {
-	url := alertmanagerurl
-	a.url = url
-	return checkMissingAlertManagerVars(a)
+// Init is new returns a alert manager handler interface
+func (a *AlertManager) Init(alertManagerURL string) error {
+	a.url = alertManagerURL
+	if a.url == "" {
+		return fmt.Errorf(alertManagerErrMsg, "Missing alertmanager url")
+	}
+	return nil
 }
 
+// ObjectCreated is ok
 func (a *AlertManager) ObjectCreated(obj interface{}) {
 	e := kbEvent.New(obj)
 	if e.Kind == "Pod" {
@@ -60,15 +69,20 @@ func (a *AlertManager) ObjectCreated(obj interface{}) {
 
 func notifyAlertManager(a *AlertManager, alerts Alerts) {
 
-	url := fmt.Sprintf("%v/api/v1/alerts", a.url)
+	url := fmt.Sprintf("%v%v", a.url, alertPushEndpoint)
 
 	jsonBytes, err := json.Marshal(alerts)
+	if err != nil {
+		glog.Error("The event object is nil")
+	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBytes))
 	if err != nil {
-		glog.Fatal(err)
+		glog.Error(err)
 		return
 	}
+	req.Header.Set("Content-Type", contentTypeJSON)
+
 	tr := &http.Transport{
 		MaxIdleConns:       10,
 		IdleConnTimeout:    30 * time.Second,
@@ -78,45 +92,37 @@ func notifyAlertManager(a *AlertManager, alerts Alerts) {
 	client := &http.Client{Transport: tr}
 	resp, err := client.Do(req)
 	if err != nil {
-		glog.Fatal(err)
+		glog.Error(err)
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		glog.Fatalf("Non 200 HTTP response received - %v - %v", resp.StatusCode, resp.Status)
+		glog.Errorf("Non 200 HTTP response received - %v - %v", resp.StatusCode, resp.Status)
 		return
 	}
 
 	glog.Infof("Message was successfully sent to alertmanager (%s)", url)
 }
 
-func checkMissingAlertManagerVars(a *AlertManager) error {
-	if a.url == "" {
-		return fmt.Errorf(alertManagerErrMsg, "Missing alertmanager url")
-	}
-
-	return nil
-}
-
 func prepareMsg(e event.Event) Alerts {
 
-	labels := make(map[string]string)
-	annotations := make(map[string]string)
-	labels["namespace"] = e.Namespace
-	labels["name"] = e.Name
-	labels["reason"] = e.Reason
-	labels["kind"] = e.Kind
-	labels["message"] = e.Message
-	labels["client"] = "k8swatch"
-	labels["alertstate"] = alertLevel[e.Reason]
-
-	alert := Alert{
-		Labels:      labels,
-		Annotations: annotations,
+	labels := map[string]string{
+		"namespace":  e.Namespace,
+		"name":       e.Name,
+		"reason":     e.Reason,
+		"kind":       e.Kind,
+		"message":    e.Message,
+		"client":     "k8swatch",
+		"alertstate": alertLevel[e.Reason],
 	}
+	annotations := make(map[string]string)
 
-	alerts := Alerts{alert}
-	return alerts
+	return Alerts{
+		Alert{
+			Labels:      labels,
+			Annotations: annotations,
+		},
+	}
 
 }

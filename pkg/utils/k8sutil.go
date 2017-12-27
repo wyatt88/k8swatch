@@ -1,44 +1,31 @@
 package utils
 
 import (
-	"os"
-	"k8s.io/client-go/kubernetes"
 	"github.com/golang/glog"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	
 )
 
 func GetClient() kubernetes.Interface {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		glog.Fatalf("Can not get kubernetes config: %v", err)
+		glog.Fatalf("Can not get Kubernetes config: %v", err)
 	}
-	
-	clientset, err := kubernetes.NewForConfig(config)
+
+	clientSet, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		glog.Fatalf("Can not create kubernetes client: %v", err)
+		glog.Fatalf("Can not create Kubernetes client: %v", err)
 	}
-	
-	return clientset
+	return clientSet
 }
 
-func buildOutOfClusterConfig() (*rest.Config, error) {
-	kubeconfigPath := os.Getenv("KUBECONFIG")
-	if kubeconfigPath == "" {
-		kubeconfigPath = os.Getenv("HOME") + "/.kube/config"
-	}
-	return clientcmd.BuildConfigFromFlags("", kubeconfigPath)
-}
-
-// GetClientOutOfCluster returns a k8s clientset to the request from outside of cluster
-func GetClientOutOfCluster() kubernetes.Interface {
-	config, err := buildOutOfClusterConfig()
+// GetClientOutOfCluster returns a k8s clientSet to the request from outside of cluster
+func GetClientOutOfCluster(kubeConfig string) kubernetes.Interface {
+	config, err := clientcmd.BuildConfigFromFlags("", kubeConfig)
 	if err != nil {
-		glog.Fatalf("Can not get kubernetes config: %v", err)
+		glog.Errorf("Can not get kubernetes config from kubeconfig file: %v", err)
 	}
-	
-	clientset, err := kubernetes.NewForConfig(config)
-	
-	return clientset
+	clientSet, err := kubernetes.NewForConfig(config)
+	return clientSet
 }

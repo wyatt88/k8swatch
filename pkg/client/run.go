@@ -1,18 +1,17 @@
 package client
 
 import (
-	"github.com/wyatt88/k8swatch/pkg/handlers"
-	"github.com/wyatt88/k8swatch/pkg/controller"
 	"github.com/golang/glog"
+	"github.com/wyatt88/k8swatch/pkg/controller"
+	"github.com/wyatt88/k8swatch/pkg/handlers"
 )
 
-func Run(master string,alertmanagerurl string) {
+// Run is ok
+func Run(master string, alertmanagerURL string) {
 	var eventHandler handlers.AlertManager
-	//eventHandler := new(handlers.AlertManager)
-	if err := eventHandler.Init(alertmanagerurl); err != nil {
+	if err := eventHandler.Init(alertmanagerURL); err != nil {
 		glog.Fatal(err)
 	}
-	
+
 	controller.Start(master, eventHandler)
 }
-

@@ -4,6 +4,7 @@ import (
 	"k8s.io/api/core/v1"
 )
 
+// Event is a interface
 type Event struct {
 	Namespace string
 	Kind      string
@@ -12,24 +13,17 @@ type Event struct {
 	Message   string
 }
 
-// New create new Kubewatch Event
-func New(obj interface{}) Event {
-	var namespace, kind, reason, name, message string
+// New create new k8swatch Event
+func New(obj interface{}) *Event {
 	if apiService, ok := obj.(*v1.Event); ok {
-		namespace = apiService.Namespace
-		name = apiService.Name
-		kind = apiService.InvolvedObject.Kind
-		reason = apiService.Reason
-		message = apiService.Message
+		return &Event{
+			Namespace: apiService.Namespace,
+			Name:      apiService.Name,
+			Kind:      apiService.InvolvedObject.Kind,
+			Reason:    apiService.Reason,
+			Message:   apiService.Message,
+		}
+	} else {
+		return nil
 	}
-	
-	kbEvent := Event{
-		Namespace: namespace,
-		Kind:      kind,
-		Reason:    reason,
-		Name:      name,
-		Message: message,
-	}
-	
-	return kbEvent
 }
