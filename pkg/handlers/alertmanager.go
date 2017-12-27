@@ -6,17 +6,19 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-	
+
 	"github.com/wyatt88/k8swatch/pkg/event"
 	kbEvent "github.com/wyatt88/k8swatch/pkg/event"
-	
+
 	"github.com/golang/glog"
 )
 
 var alertLevel = map[string]string{
-	"Scheduled": "pending",
-	"Killing": "firing",
+	"Scheduled": "warning",
+	"Killing":   "firing",
+	"Started":   "good",
 }
+
 type Alert struct {
 	Labels       map[string]string `json:"labels"`
 	Annotations  map[string]string `json:"annotations"`
@@ -57,11 +59,11 @@ func (a *AlertManager) ObjectCreated(obj interface{}) {
 }
 
 func notifyAlertManager(a *AlertManager, alerts Alerts) {
-	
+
 	url := fmt.Sprintf("%v/api/v1/alerts", a.url)
-	
+
 	jsonBytes, err := json.Marshal(alerts)
-	
+
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBytes))
 	if err != nil {
 		glog.Fatal(err)
@@ -72,7 +74,7 @@ func notifyAlertManager(a *AlertManager, alerts Alerts) {
 		IdleConnTimeout:    30 * time.Second,
 		DisableCompression: true,
 	}
-	
+
 	client := &http.Client{Transport: tr}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -80,12 +82,12 @@ func notifyAlertManager(a *AlertManager, alerts Alerts) {
 		return
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != 200 {
 		glog.Fatalf("Non 200 HTTP response received - %v - %v", resp.StatusCode, resp.Status)
 		return
 	}
-	
+
 	glog.Infof("Message was successfully sent to alertmanager (%s)", url)
 }
 
@@ -93,12 +95,12 @@ func checkMissingAlertManagerVars(a *AlertManager) error {
 	if a.url == "" {
 		return fmt.Errorf(alertManagerErrMsg, "Missing alertmanager url")
 	}
-	
+
 	return nil
 }
 
-func prepareMsg(e event.Event)  Alerts {
-	
+func prepareMsg(e event.Event) Alerts {
+
 	labels := make(map[string]string)
 	annotations := make(map[string]string)
 	labels["namespace"] = e.Namespace
@@ -108,13 +110,13 @@ func prepareMsg(e event.Event)  Alerts {
 	labels["message"] = e.Message
 	labels["client"] = "k8swatch"
 	labels["alertstate"] = alertLevel[e.Reason]
-	
+
 	alert := Alert{
 		Labels:      labels,
 		Annotations: annotations,
 	}
-	
+
 	alerts := Alerts{alert}
 	return alerts
-	
+
 }
