@@ -36,7 +36,6 @@ func Start(kubeConfig string, master string, eventHandler handlers.AlertManager)
 		glog.Errorf("Kubeconfig file doesn't exist;Error is %v", err)
 	} else {
 		kubeClient = utils.GetClient()
-		glog.Fatalf("You are not in cluster")
 	}
 
 	c := newController(kubeClient, eventHandler)

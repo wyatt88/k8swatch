@@ -116,6 +116,7 @@ func prepareMsg(e event.Event) Alerts {
 		"client":     "k8swatch",
 		"alertstate": alertLevel[e.Reason],
 	}
+	fmt.Print(e.Reason)
 	annotations := make(map[string]string)
 
 	return Alerts{
