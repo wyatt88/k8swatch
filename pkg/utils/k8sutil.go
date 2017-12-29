@@ -21,8 +21,8 @@ func GetClient() kubernetes.Interface {
 }
 
 // GetClientOutOfCluster returns a k8s clientSet to the request from outside of cluster
-func GetClientOutOfCluster(kubeConfig string) kubernetes.Interface {
-	config, err := clientcmd.BuildConfigFromFlags("", kubeConfig)
+func GetClientOutOfCluster(kubeConfig string, master string) kubernetes.Interface {
+	config, err := clientcmd.BuildConfigFromFlags(master, kubeConfig)
 	if err != nil {
 		glog.Errorf("Can not get kubernetes config from kubeconfig file: %v", err)
 	}

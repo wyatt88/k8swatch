@@ -7,11 +7,12 @@ import (
 )
 
 // Run is ok
-func Run(master string, alertmanagerURL string) {
+func Run(kubeConfig string, master string, alertmanagerURL string) {
+
 	var eventHandler handlers.AlertManager
 	if err := eventHandler.Init(alertmanagerURL); err != nil {
 		glog.Fatal(err)
 	}
 
-	controller.Start(master, eventHandler)
+	controller.Start(kubeConfig, master, eventHandler)
 }

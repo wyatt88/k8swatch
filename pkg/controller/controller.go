@@ -29,10 +29,10 @@ type Controller struct {
 }
 
 // Start is Ok
-func Start(kubeConfig string, eventHandler handlers.AlertManager) {
+func Start(kubeConfig string, master string, eventHandler handlers.AlertManager) {
 	var kubeClient kubernetes.Interface
 	if _, err := os.Stat(kubeConfig); os.IsNotExist(err) {
-		kubeClient = utils.GetClientOutOfCluster()
+		kubeClient = utils.GetClientOutOfCluster(kubeConfig, master)
 		glog.Errorf("Kubeconfig file doesn't exist;Error is %v", err)
 	} else {
 		kubeClient = utils.GetClient()

@@ -26,4 +26,5 @@ func New(obj interface{}) *Event {
 	} else {
 		return nil
 	}
+
 }

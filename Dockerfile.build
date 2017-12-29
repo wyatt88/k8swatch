@@ -1,9 +1,9 @@
 FROM golang:alpine
 MAINTAINER "Double Wen <wyatthaha@126.com>"
 
-RUN apk update && \
+RUN rm -rf /var/cache/apk/* && \
+    apk update && \
     apk add git build-base && \
-    rm -rf /var/cache/apk/* && \
     mkdir -p "$GOPATH/src/github.com/wyatt88/k8swatch"
 
 ADD . "$GOPATH/src/github.com/wyatt88/k8swatch"
