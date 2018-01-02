@@ -12,7 +12,7 @@ func main() {
 	var master string
 	var alertmanagerURL string
 
-	flag.StringVar(&kubeConfig, "kubeconfig", "~/.kube/config", "absolute path to the kubeconfig file")
+	flag.StringVar(&kubeConfig, "kubeconfig", "$HOME/.kube/config", "absolute path to the kubeconfig file")
 	flag.StringVar(&master, "master", "http://127.0.0.1:8080", "master url")
 	flag.StringVar(&alertmanagerURL, "alertmanager", "http://127.0.0.1:9093", "alertmanager url")
 	flag.Parse()

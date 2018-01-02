@@ -32,10 +32,10 @@ type Controller struct {
 func Start(kubeConfig string, master string, eventHandler handlers.AlertManager) {
 	var kubeClient kubernetes.Interface
 	if _, err := os.Stat(kubeConfig); os.IsNotExist(err) {
-		kubeClient = utils.GetClientOutOfCluster(kubeConfig, master)
-		glog.Errorf("Kubeconfig file doesn't exist;Error is %v", err)
-	} else {
+		glog.Error("Kubeconfig file doesn't exist")
 		kubeClient = utils.GetClient()
+	} else {
+		kubeClient = utils.GetClientOutOfCluster(kubeConfig, master)
 	}
 
 	c := newController(kubeClient, eventHandler)

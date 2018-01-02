@@ -28,5 +28,8 @@ func GetClientOutOfCluster(kubeConfig string, master string) kubernetes.Interfac
 		glog.Errorf("Can not get kubernetes config from kubeconfig file: %v", err)
 	}
 	clientSet, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		glog.Fatalf("Can not create kubernetes object because config file has error: %v", err)
+	}
 	return clientSet
 }
