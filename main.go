@@ -18,5 +18,5 @@ func main() {
 	flag.Parse()
 
 	// creates the client
-	c.Run(kubeConfig, alertmanagerURL)
+	c.Run(kubeConfig, master, alertmanagerURL)
 }

@@ -105,7 +105,7 @@ func notifyAlertManager(a *AlertManager, alerts Alerts) {
 	glog.Infof("Message was successfully sent to alertmanager (%s)", url)
 }
 
-func prepareMsg(e event.Event) Alerts {
+func prepareMsg(e *event.Event) Alerts {
 
 	labels := map[string]string{
 		"namespace":  e.Namespace,

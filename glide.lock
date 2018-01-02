@@ -1,5 +1,5 @@
-hash: 4d137da009c64a5a6cf863d66b5a6d8faa528b2bbcfa87d8510a72815aade741
-updated: 2017-12-26T18:37:09.802534+08:00
+hash: 96bdbda0dc0b7a1f04a972e019ecbd708e574e4f73b5cd334d3337233cc0a645
+updated: 2017-12-29T18:25:40.464446+08:00
 imports:
 - name: github.com/davecgh/go-spew
   version: 782f4967f2dc4564575ca782fe2d04090b5faca8
@@ -27,7 +27,7 @@ imports:
   - proto
   - sortkeys
 - name: github.com/golang/glog
-  version: 44145f04b68cf362d9c4df2182967c2275eaefed
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
 - name: github.com/golang/protobuf
   version: 4bd1920723d7b7c925de087aa32e2187708897f7
   subpackages:
@@ -77,7 +77,7 @@ imports:
 - name: github.com/spf13/pflag
   version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
 - name: github.com/wyatt88/k8swatch
-  version: 17e3ccb62d077be25a2b363e3542dca8332023d5
+  version: 3f35ffc39876f3c466aed1182de2650a8c9985e2
   subpackages:
   - pkg/client
   - pkg/controller
