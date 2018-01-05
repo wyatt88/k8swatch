@@ -9,7 +9,6 @@ RUN rm -rf /var/cache/apk/* && \
 ADD . "$GOPATH/src/github.com/wyatt88/k8swatch"
 
 RUN cd "$GOPATH/src/github.com/wyatt88/k8swatch" && \
-    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a --installsuffix cgo --ldflags="-s" -o /k8swatch
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a --installsuffix cgo --ldflags="-s" -o /bin/k8swatch
 
-COPY Dockerfile.run /
-CMD tar -cf - -C / Dockerfile.run k8swatch
+ENTRYPOINT ["/bin/k8swatch"]

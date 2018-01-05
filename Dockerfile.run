@@ -1,6 +1,0 @@
-FROM alpine:3.4
-RUN apk add --update ca-certificates
-
-COPY k8sewatch /bin/k8swatch
-
-ENTRYPOINT ["/bin/k8swatch"]
