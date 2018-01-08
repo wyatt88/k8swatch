@@ -25,7 +25,7 @@ func GetClient() kubernetes.Interface {
 func GetClientOutOfCluster(kubeConfig string, master string) kubernetes.Interface {
 	config, err := clientcmd.BuildConfigFromFlags(master, kubeConfig)
 	if err != nil {
-		glog.Errorf("Can not get kubernetes config from kubeconfig file: %v", err)
+		glog.Fatalf("Can not get kubernetes config from kubeconfig file: %v", err)
 	}
 	clientSet, err := kubernetes.NewForConfig(config)
 	if err != nil {

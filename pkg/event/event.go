@@ -23,8 +23,7 @@ func New(obj interface{}) *Event {
 			Reason:    apiService.Reason,
 			Message:   apiService.Message,
 		}
-	} else {
-		return nil
 	}
 
+	return nil
 }
