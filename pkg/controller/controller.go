@@ -123,7 +123,7 @@ func (c *Controller) processItem(key string) error {
 		return err
 	}
 	if !exists {
-		fmt.Printf("Event %s does not exist anymore \n", key)
+		glog.Infof("Event %s does not exist anymore", key)
 	}
 	c.eventHandler.ObjectCreated(obj)
 	return nil
