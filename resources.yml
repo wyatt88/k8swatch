@@ -1,0 +1,16 @@
+---
+# resource_type_name: examples Pod,Service,Node
+#   name: Resource name you want to watch
+#   - kubernetes-dashboard-*
+#   - '*'  watch all resources in type
+#
+# Pod:
+#   name:
+#   - kubernetes-dashboard-*
+
+Resource:
+  Pod:
+  - 'kubernetes-dashboard-*'
+  - 'k8swatch-*'
+  Node:
+  - '*'

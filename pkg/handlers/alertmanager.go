@@ -4,9 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"regexp"
+	"strings"
+
 	"net/http"
 	"time"
 
+	"github.com/wyatt88/k8swatch/pkg/config"
 	"github.com/wyatt88/k8swatch/pkg/event"
 	kbEvent "github.com/wyatt88/k8swatch/pkg/event"
 
@@ -37,7 +41,8 @@ type Alerts []Alert
 
 // AlertManager is the underlying struct used by the alert manager handler receivers
 type AlertManager struct {
-	url string
+	url            string
+	resourceconfig config.Resources
 }
 
 var alertManagerErrMsg = `
@@ -48,8 +53,9 @@ var alertManagerErrMsg = `
  `
 
 // Init is new returns a alert manager handler interface
-func (a *AlertManager) Init(alertManagerURL string) error {
+func (a *AlertManager) Init(alertManagerURL string, resourceConf config.Resources) error {
 	a.url = alertManagerURL
+	a.resourceconfig = resourceConf
 	if a.url == "" {
 		return fmt.Errorf(alertManagerErrMsg, "Missing alertmanager url")
 	}
@@ -59,12 +65,17 @@ func (a *AlertManager) Init(alertManagerURL string) error {
 // ObjectCreated is ok
 func (a *AlertManager) ObjectCreated(obj interface{}) {
 	e := kbEvent.New(obj)
-	if e.Kind == "Pod" {
-		if alertLevel[e.Reason] != "" {
+	nameList := a.resourceconfig.Resource[e.Kind]
+	if nameList != nil || len(nameList) > 0 {
+		r, _ := regexp.Compile(strings.Join(nameList, "|"))
+		if r.MatchString(e.Name) {
 			alerts := prepareMsg(e)
 			notifyAlertManager(a, alerts)
 		}
+	} else {
+		return
 	}
+
 }
 
 func notifyAlertManager(a *AlertManager, alerts Alerts) {
@@ -116,7 +127,6 @@ func prepareMsg(e *event.Event) Alerts {
 		"client":     "k8swatch",
 		"alertstate": alertLevel[e.Reason],
 	}
-	fmt.Print(e.Reason)
 	annotations := make(map[string]string)
 
 	return Alerts{
