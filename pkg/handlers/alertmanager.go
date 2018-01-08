@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"net/http"
-	"time"
 
 	"github.com/wyatt88/k8swatch/pkg/config"
 	"github.com/wyatt88/k8swatch/pkg/event"
@@ -70,7 +69,7 @@ func (a *AlertManager) ObjectCreated(obj interface{}) {
 		r, _ := regexp.Compile(strings.Join(nameList, "|"))
 		if r.MatchString(e.Name) {
 			alerts := prepareMsg(e)
-			notifyAlertManager(a, alerts)
+			a.fire(alerts)
 		}
 	} else {
 		return
@@ -78,46 +77,28 @@ func (a *AlertManager) ObjectCreated(obj interface{}) {
 
 }
 
-func notifyAlertManager(a *AlertManager, alerts Alerts) {
-
-	url := fmt.Sprintf("%v%v", a.url, alertPushEndpoint)
-
+func (a *AlertManager) fire(alerts Alerts) {
+	url := a.url + alertPushEndpoint
 	jsonBytes, err := json.Marshal(alerts)
 	if err != nil {
-		glog.Error("The event object is nil")
-	}
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBytes))
-	if err != nil {
-		glog.Error(err)
+		glog.Errorf("failed to marshal alerts %v to json: %v", alerts, err)
 		return
 	}
-	req.Header.Set("Content-Type", contentTypeJSON)
 
-	tr := &http.Transport{
-		MaxIdleConns:       10,
-		IdleConnTimeout:    30 * time.Second,
-		DisableCompression: true,
-	}
-
-	client := &http.Client{Transport: tr}
-	resp, err := client.Do(req)
+	resp, err := http.Post(url, contentTypeJSON, bytes.NewBuffer(jsonBytes))
 	if err != nil {
-		glog.Error(err)
+		glog.Errorf("failed to post alerts to alertmanager: %v", err)
 		return
 	}
 	defer resp.Body.Close()
-
 	if resp.StatusCode != 200 {
 		glog.Errorf("Non 200 HTTP response received - %v - %v", resp.StatusCode, resp.Status)
 		return
 	}
-
 	glog.Infof("Message was successfully sent to alertmanager (%s)", url)
 }
 
 func prepareMsg(e *event.Event) Alerts {
-
 	labels := map[string]string{
 		"namespace":  e.Namespace,
 		"name":       e.Name,
@@ -127,13 +108,8 @@ func prepareMsg(e *event.Event) Alerts {
 		"client":     "k8swatch",
 		"alertstate": alertLevel[e.Reason],
 	}
-	annotations := make(map[string]string)
-
+	glog.V(3).Info(e.Reason)
 	return Alerts{
-		Alert{
-			Labels:      labels,
-			Annotations: annotations,
-		},
+		Alert{Labels: labels},
 	}
-
 }
