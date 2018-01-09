@@ -21,10 +21,19 @@ const (
 	contentTypeJSON   = "application/json"
 )
 
-var alertLevel = map[string]string{
+var podStatus = map[string]string{
 	"Scheduled": "warning",
 	"Killing":   "firing",
 	"Started":   "good",
+}
+
+var nodeStatus = map[string]string{
+	"NodeNotReady": "firing",
+}
+
+var alertLevel = map[string]map[string]string{
+	"Pod":  podStatus,
+	"Node": nodeStatus,
 }
 
 // Alert is ok
@@ -100,13 +109,17 @@ func (a *AlertManager) fire(alerts Alerts) {
 
 func prepareMsg(e *event.Event) Alerts {
 	labels := map[string]string{
-		"namespace":  e.Namespace,
-		"name":       e.Name,
-		"reason":     e.Reason,
-		"kind":       e.Kind,
-		"message":    e.Message,
-		"client":     "k8swatch",
-		"alertstate": alertLevel[e.Reason],
+		"namespace": e.Namespace,
+		"name":      e.Name,
+		"reason":    e.Reason,
+		"kind":      e.Kind,
+		"message":   e.Message,
+		"client":    "k8swatch",
+	}
+	if alertLevel[e.Kind] != nil && alertLevel[e.Kind][e.Reason] != "" {
+		labels["alertstate"] = alertLevel[e.Kind][e.Reason]
+	} else {
+		labels["alertstate"] = "pending"
 	}
 	glog.V(3).Info(e.Reason)
 	return Alerts{
