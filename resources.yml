@@ -10,7 +10,6 @@
 
 Resource:
   Pod:
-  - 'kubernetes-dashboard-*'
   - 'k8swatch-*'
   Node:
-  - '*'
+  - 'kube-node-1'
