@@ -23,12 +23,12 @@ const (
 
 var podStatus = map[string]string{
 	"Scheduled": "warning",
-	"Killing":   "firing",
+	"Killing":   "critical",
 	"Started":   "good",
 }
 
 var nodeStatus = map[string]string{
-	"NodeNotReady": "firing",
+	"NodeNotReady": "critical",
 }
 
 var alertLevel = map[string]map[string]string{
@@ -117,9 +117,9 @@ func prepareMsg(e *event.Event) Alerts {
 		"client":    "k8swatch",
 	}
 	if alertLevel[e.Kind] != nil && alertLevel[e.Kind][e.Reason] != "" {
-		labels["alertstate"] = alertLevel[e.Kind][e.Reason]
+		labels["severity"] = alertLevel[e.Kind][e.Reason]
 	} else {
-		labels["alertstate"] = "pending"
+		labels["severity"] = "warning"
 	}
 	glog.V(3).Info(e.Reason)
 	return Alerts{

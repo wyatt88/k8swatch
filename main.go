@@ -16,8 +16,7 @@ func main() {
 	var alertmanagerURL string
 	var resourceConfigPath string
 
-	flag.StringVar(&kubeConfig, "kubeconfig", "/Users/wenwen/.kube/config", "absolute path to the kubeconfig file")
-	// flag.StringVar(&kubeConfig, "kubeconfig", "$HOME/.kube/config", "absolute path to the kubeconfig file")
+	flag.StringVar(&kubeConfig, "kubeconfig", "$HOME/.kube/config", "absolute path to the kubeconfig file")
 	flag.StringVar(&master, "master", "http://127.0.0.1:8080", "master url")
 	flag.StringVar(&alertmanagerURL, "alertmanager", "http://127.0.0.1:9093", "alertmanager url")
 	flag.StringVar(&resourceConfigPath, "resourceconfig", "resources.yml", "path to watching resources config file")
