@@ -1,0 +1,15 @@
+---
+# Resource:
+#   resource_type_name: examples Pod,Service,Node
+#   - kubernetes-dashboard-*
+#   - '*'  watch all resources in type
+#
+# Pod:
+#   name:
+#   - kubernetes-dashboard-*
+
+Resource:
+  Pod:
+  - 'k8swatch-*'
+  Node:
+  - 'kube-node-1'

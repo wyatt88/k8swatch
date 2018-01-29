@@ -18,7 +18,7 @@ func New(obj interface{}) *Event {
 	if apiService, ok := obj.(*v1.Event); ok {
 		return &Event{
 			Namespace: apiService.Namespace,
-			Name:      apiService.Name,
+			Name:      apiService.InvolvedObject.Name,
 			Kind:      apiService.InvolvedObject.Kind,
 			Reason:    apiService.Reason,
 			Message:   apiService.Message,

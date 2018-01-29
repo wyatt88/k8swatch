@@ -4,8 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"regexp"
+	"strings"
+
 	"net/http"
 
+	"github.com/wyatt88/k8swatch/pkg/config"
 	"github.com/wyatt88/k8swatch/pkg/event"
 	kbEvent "github.com/wyatt88/k8swatch/pkg/event"
 
@@ -17,10 +21,19 @@ const (
 	contentTypeJSON   = "application/json"
 )
 
-var alertLevel = map[string]string{
+var podStatus = map[string]string{
 	"Scheduled": "warning",
-	"Killing":   "firing",
+	"Killing":   "critical",
 	"Started":   "good",
+}
+
+var nodeStatus = map[string]string{
+	"NodeNotReady": "critical",
+}
+
+var alertLevel = map[string]map[string]string{
+	"Pod":  podStatus,
+	"Node": nodeStatus,
 }
 
 // Alert is ok
@@ -36,7 +49,8 @@ type Alerts []Alert
 
 // AlertManager is the underlying struct used by the alert manager handler receivers
 type AlertManager struct {
-	url string
+	url            string
+	resourceconfig config.Resources
 }
 
 var alertManagerErrMsg = `
@@ -47,8 +61,9 @@ var alertManagerErrMsg = `
  `
 
 // Init is new returns a alert manager handler interface
-func (a *AlertManager) Init(alertManagerURL string) error {
+func (a *AlertManager) Init(alertManagerURL string, resourceConf config.Resources) error {
 	a.url = alertManagerURL
+	a.resourceconfig = resourceConf
 	if a.url == "" {
 		return fmt.Errorf(alertManagerErrMsg, "Missing alertmanager url")
 	}
@@ -58,12 +73,17 @@ func (a *AlertManager) Init(alertManagerURL string) error {
 // ObjectCreated is ok
 func (a *AlertManager) ObjectCreated(obj interface{}) {
 	e := kbEvent.New(obj)
-	if e.Kind == "Pod" {
-		if alertLevel[e.Reason] != "" {
+	nameList := a.resourceconfig.Resource[e.Kind]
+	if nameList != nil || len(nameList) > 0 {
+		r, _ := regexp.Compile(strings.Join(nameList, "|"))
+		if r.MatchString(e.Name) {
 			alerts := prepareMsg(e)
 			a.fire(alerts)
 		}
+	} else {
+		return
 	}
+
 }
 
 func (a *AlertManager) fire(alerts Alerts) {
@@ -89,13 +109,17 @@ func (a *AlertManager) fire(alerts Alerts) {
 
 func prepareMsg(e *event.Event) Alerts {
 	labels := map[string]string{
-		"namespace":  e.Namespace,
-		"name":       e.Name,
-		"reason":     e.Reason,
-		"kind":       e.Kind,
-		"message":    e.Message,
-		"client":     "k8swatch",
-		"alertstate": alertLevel[e.Reason],
+		"namespace": e.Namespace,
+		"name":      e.Name,
+		"reason":    e.Reason,
+		"kind":      e.Kind,
+		"message":   e.Message,
+		"client":    "k8swatch",
+	}
+	if alertLevel[e.Kind] != nil && alertLevel[e.Kind][e.Reason] != "" {
+		labels["severity"] = alertLevel[e.Kind][e.Reason]
+	} else {
+		labels["severity"] = "warning"
 	}
 	glog.V(3).Info(e.Reason)
 	return Alerts{
